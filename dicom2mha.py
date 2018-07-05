@@ -11,9 +11,60 @@ import numpy as np
 import SimpleITK as sitk
 import os
 
-outputfile	= "Z:\inventory2.txt"	# file to save the results to
-folder		= "Z:\"	 # the folder to inventory
-###########################################detect filename
+outputfile	= "Z:\liver_MRI\Gad Surgical\inventory2.txt"	# file to save the results to
+inputfile	= "Z:\liver_MRI\Gad Surgical\cleaninventory.txt"	# file to save the results to
+folder		= "Z:\liver_MRI\Gad Surgical"	 # the folder to inventory
+
+
+
+origin_name_file = "Z:\liver_MRI\Gad Surgical\originnames.txt"
+#originnames = [(j[0] + '\\' + j[0] + "_Original") for j in origins]
+#with open(origin_name_file, 'w') as ofile:
+#    for i in originnames:
+#        ofile.write(i+'\n')
+#################################read lines from txt
+with open(inputfile) as f:
+    lines = [line.rstrip('\n') for line in f]
+
+with open(origin_name_file) as ofile:
+    originnames = [originn for originn in ofile]    
+    
+for index,names in enumerate(lines):
+
+    if index >= 158:
+        data_directory = folder+"\\"+lines[index]
+        print (index,names,data_directory)
+        series_IDs = sitk.ImageSeriesReader.GetGDCMSeriesIDs(data_directory)
+        if not series_IDs:
+            print("ERROR: given directory \""+data_directory+"\" does not contain a DICOM series.")
+            for filename in os.listdir(data_directory):
+                filepath=os.path.join(data_directory,filename)
+                print("checking:"+filepath)
+                data_directory = filepath
+                series_IDs = sitk.ImageSeriesReader.GetGDCMSeriesIDs(data_directory)
+# Get the list of files belonging to a specific series ID.
+        reader = sitk.ImageSeriesReader()
+# Use the functional interface to read the image series.
+        series_file_names = reader.GetGDCMSeriesFileNames(data_directory, series_IDs[0])
+        reader.SetFileNames(series_file_names)
+        reader.MetaDataDictionaryArrayUpdateOn()
+        reader.LoadPrivateTagsOn()
+        image3D = reader.Execute()
+# Write the image.
+        output_file_name_3D = os.path.join("Z:\liver_MRI\Gad Surgical",lines[index]+ '.mha')
+        sitk.WriteImage(image3D, output_file_name_3D)
+
+# Read it back again.
+        written_image = sitk.ReadImage(output_file_name_3D)
+
+# Check that the original and written image are the same.
+        statistics_image_filter = sitk.StatisticsImageFilter()
+        statistics_image_filter.Execute(image3D - written_image)
+
+# Check that the original and written files are the same
+        print('Max, Min differences are : {0}, {1}'.format(statistics_image_filter.GetMaximum(), statistics_image_filter.GetMinimum()))
+
+#################################save filename to txt
 #dirf = os.getcwd()
 #subdir = os.listdir(folder)
 #with open(outputfile, "w") as txtfile:
@@ -51,22 +102,29 @@ folder		= "Z:\"	 # the folder to inventory
 
 #data_directory = os.path.dirname(fdata("CIRS057A_MR_CT_DICOM/readme.txt"))
 #series_ID = '1.2.840.113619.2.290.3.3233817346.783.1399004564.515'
+#data_directory = folder+"\\"+lines[0]
+#series_IDs = sitk.ImageSeriesReader.GetGDCMSeriesIDs(data_directory)
+#if not series_IDs:
+#    print("ERROR: given directory \""+data_directory+"\" does not contain a DICOM series.")
 #
 ## Get the list of files belonging to a specific series ID.
 #reader = sitk.ImageSeriesReader()
 ## Use the functional interface to read the image series.
-#original_image = sitk.ReadImage(reader.GetGDCMSeriesFileNames(data_directory, series_ID))
-#
+#series_file_names = reader.GetGDCMSeriesFileNames(data_directory, series_IDs[0])
+#reader.SetFileNames(series_file_names)
+#reader.MetaDataDictionaryArrayUpdateOn()
+#reader.LoadPrivateTagsOn()
+#image3D = reader.Execute()
 ## Write the image.
 #output_file_name_3D = os.path.join(data_directory, '3DImage.mha')
-#sitk.WriteImage(original_image, output_file_name_3D)
+#sitk.WriteImage(image3D, output_file_name_3D)
 #
 ## Read it back again.
 #written_image = sitk.ReadImage(output_file_name_3D)
 #
 ## Check that the original and written image are the same.
 #statistics_image_filter = sitk.StatisticsImageFilter()
-#statistics_image_filter.Execute(original_image - written_image)
+#statistics_image_filter.Execute(image3D - written_image)
 #
 ## Check that the original and written files are the same
 #print('Max, Min differences are : {0}, {1}'.format(statistics_image_filter.GetMaximum(), statistics_image_filter.GetMinimum()))
