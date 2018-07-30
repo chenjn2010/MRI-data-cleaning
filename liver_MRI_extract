@@ -1,0 +1,41 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul 12 15:20:23 2018
+
+@author: Jianan
+"""
+
+import matplotlib.pyplot as plt
+import numpy as np
+import SimpleITK as sitk
+import os
+import csv
+from patient import *
+
+imageFile="Z:\\liver_MRI\\Gad Surgical\\cleaned_data\\151_Original.mha"
+maskFile="Z:\\liver_MRI\\Gad Surgical\\cleaned_data\\151_label.mha"
+textfile = "Z:\\liver_MRI\\Liver_MRI_Data_Index.txt"
+folder = "Z:\\liver_MRI\\Gad Surgical"
+outputfile = "Z:\\liver_MRI\\Gad Surgical\\cleaned_data\\featuresll.csv"
+newfolder = "Z:\\liver_MRI\\Gad Surgical\\"  
+def extract_liverMRI_features(image,mask,csv):
+    myPatient=Patient(image,mask)
+    myPatient.generate_lesion_features(csv)
+    
+#with open(csvfile, 'r') as f:
+#    reader = csv.reader(f)
+#    index=list(reader)
+#    index=[str(n) for n in index]
+    
+#with open(textfile) as f:
+#    index = [line.rstrip('\n') for line in f]
+    
+for i,v in enumerate(mhas):
+    if "Mask" in v:        
+        print "working on number:"+str(i)+", patient "+mhasplit[i][0]+"'s lesions"
+        imageFile=os.path.join(folder,"cleaned_data",mhasplit[i][0]+"_Original.mha")
+        maskFile=os.path.join(newfolder,v)
+        extract_liverMRI_features(imageFile,maskFile,outputfile)
+        print "patient "+v+"'s feature has been extracted"
+#myPatient=Patient(imageFile,maskFile)
+#myPatient.generate_lesion_features(csvfile)
