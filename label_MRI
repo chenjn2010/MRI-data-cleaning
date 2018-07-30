@@ -1,0 +1,228 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul  5 13:49:48 2018
+
+@author: Jianan
+"""
+from matplotlib.pyplot import imshow
+import matplotlib.pyplot as plt
+import numpy as np
+import SimpleITK as sitk
+import os
+import re 
+
+###################################### BUILD 3D ANNOTATIONS
+
+IMAGE_DIR = 'Z:\liver_MRI\Gad Surgical'
+OUT_DIR = 'D:\liverMRI'
+folder		= "Z:\liver_MRI\Gad Surgical"
+outputfile	= "Z:\liver_MRI\Gad Surgical\mhaname.txt"
+inputfile = "Z:\liver_MRI\Gad Surgical\mha.txt"
+newfile = "Z:\liver_MRI\Gad Surgical\\number.txt"
+###############################save filename to txt
+#with open(inputfile) as f:
+#    mhas = [line.rstrip('\n') for line in f]
+    
+################################text file processing    
+#mhasplit = [i.split("\\",1) for i in mhas]
+#A = np.asarray(mhasplit)
+#B = A[:,1]
+#mhasplit2 = np.ndarray.tolist(B)
+#mhasplit3 = [i[:-4] for i in mhasplit2]
+#mhasplit4 = [s.replace('T','') for s in mhasplit3]
+#mhasplitfinal = [s.split('_',3) for s in mhasplit4]
+#C = np.asarray(mhasplitfinal)
+#D = A[:,0]
+#mhasplitfinal2 = np.ndarray.tolist(D) 
+    
+    
+#########################################################???    
+#subdir = os.listdir(folder)
+#with open(outputfile, "w") as txtfile:
+#    for i in subdir:
+#        if os.path.isdir(folder+"\\"+i):
+#            subsubdir=os.listdir(folder+"\\"+i)
+#            for j in subsubdir:
+#                print(i,j)
+#                txtfile.write("%s\\%s\n" % (i,j))
+#
+#with open(newfile,'w') as mfile:
+#    for i,v in enumerate(mhasplit3):
+#        mhapath = os.path.join(folder,mhasplitfinal2[i],mhasplit3[i])
+#        subdir = os.listdir(mhapath)
+#        for j in subdir:
+#            print(j)
+#            mfile.write("%s\\%s\n" % (mhasplitfinal2[i],j))
+        
+    
+################################################################# processing
+ind = 416
+
+initind=ind
+#pt = 0
+#mhashape = []
+##############################reading shape
+##while ind < len(mhasplitfinal):
+#while ind < 10:
+#    if len(mhasplitfinal[ind])==2:
+#        filename = os.path.join(IMAGE_DIR, mhas[ind])
+#        im=sitk.ReadImage(filename)
+#        im_array = sitk.GetArrayFromImage(im)
+#        mhashape.append(im_array.shape)
+#        pt = ind
+#        while mhasplitfinal[pt][0] == mhasplitfinal[ind][0]:
+#            pt=pt-1
+#            if mhasplitfinal[pt][0] == mhasplitfinal[ind][0]:
+#                mhashape.append(im_array.shape)
+#        pt=ind
+#    ind=ind+1
+
+#ind=120
+##while ind < 10:
+while ind < len(mhasplitfinal):
+#while ind < 199:
+    if ind == initind:
+        label_array = np.zeros(mhashape4[ind])
+#    if mhasplitfinal[ind][0]!=mhasplitfinal[ind-1][0] and ind!=0:
+#        img=sitk.GetImageFromArray(label_array)
+#        OUTFN=os.path.join(folder,mhasplitfinal[ind-1][0],mhasplitfinal[ind-1][0]+'_label.mha')
+#        sitk.WriteImage(img,OUTFN)
+#        label_array = np.zeros(mhashape4[ind])
+#        print('saving...new turn')
+#    if len(mhasplitfinal[ind])==2:
+        
+        
+    if len(mhasplitfinal[ind])!=2:
+        print("dealing with the "+str(ind)+"th image")
+        filename = os.path.join(IMAGE_DIR, mhas[ind])
+        im=sitk.ReadImage(filename)
+        im_array = sitk.GetArrayFromImage(im)
+        print('ready')
+#        for i,v in enumerate(im_array):
+#            if i > 9:
+#                label_array[i+int(midlist[ind][2])-1] = label_array[i+int(midlist[ind][2])-1]+int(mhasplitfinal[ind][2])/255*im_array[i]
+#            else:
+#                label_array[i+int(midlist[ind][2])+16] = label_array[i+int(midlist[ind][2])+16]+int(mhasplitfinal[ind][2])/255*im_array[i]
+        for i,v in enumerate(im_array):
+            label_array[i+int(midlist[ind][2])-1] = label_array[i+int(midlist[ind][2])-1]+im_array[i]
+#            *int(mhasplitfinal[ind][2])/255
+        i1=0
+        j1=0
+        k1=0
+        while i1 < len(label_array[0]):
+            while j1 < len(label_array[1]):
+                while k1 < len(label_array[2]):
+                    if label_array[i1][j1][k1]==510:
+                        label_array[i1][j1][k1]=255
+                    k1=k1+1
+                j1=j1+1
+            i1=i1+1
+        print('done')
+        
+    else:
+        img=sitk.GetImageFromArray(label_array)
+        OUTFN=os.path.join(OUT_DIR,mhasplitfinal[ind][0]+'_newlabel.mha')
+#        ,mhasplitfinal[ind][0]
+        print('saving...')
+        sitk.WriteImage(img,OUTFN)
+        label_array = np.zeros(mhashape4[ind+1])
+        print('done, new turn')
+    ind=ind+1
+    
+
+
+    
+#    if len(mhasplitfinal[ind])!=2:
+#        print("dealing with the "+str(ind)+"th image")
+#        label_array = np.zeros(mhashape4[ind+1])
+#        OUTFN=os.path.join(OUT_DIR,mhasplit2[ind])
+#        filename = os.path.join(IMAGE_DIR, mhas[ind])
+#        im=sitk.ReadImage(filename)
+#        im_array = sitk.GetArrayFromImage(im)
+#
+#        print('ready')
+##        for i,v in enumerate(im_array):
+##            if i > 9:
+##                label_array[i+int(midlist[ind][2])-1] = label_array[i+int(midlist[ind][2])-1]+int(mhasplitfinal[ind][2])/255*im_array[i]
+##            else:
+##                label_array[i+int(midlist[ind][2])+16] = label_array[i+int(midlist[ind][2])+16]+int(mhasplitfinal[ind][2])/255*im_array[i]
+#        for i,v in enumerate(im_array):
+#            label_array[i+int(midlist[ind][2])-1] = label_array[i+int(midlist[ind][2])-1]+im_array[i]
+##            *int(mhasplitfinal[ind][2])/255
+#        img=sitk.GetImageFromArray(label_array)
+#        sitk.WriteImage(img,OUTFN)
+#        print('done, new turn')
+#    ind=ind+1    
+    
+#        pt = ind
+#        while mhasplitfinal[pt][0] == mhasplitfinal[ind][0]:
+#            pt=pt-1
+#            if mhasplitfinal[pt][0] == mhasplitfinal[ind][0]:
+#                mhashape.append(im_array.shape)
+#        pt=ind
+#    ind=ind+1
+    
+        
+#    if len(mhasplitfinal[ind])!=2:                
+#        maskpath = os.path.join(IMAGE_DIR,str(ind),mhas[ind])
+#        imask = sitk.ReadImage(str(maskpath))
+#        mask_array = sitk.GetArrayFromImage(imask)
+#        if len(mhasplitfinal[ind+1])!=2:
+#            maskpath2 = os.path.join(IMAGE_DIR,str(ind),mhas[ind])
+#            imask2 = sitk.ReadImage(str(maskpath2))
+#            mask_array2 = sitk.GetArrayFromImage(imask2)
+        
+    
+                
+def readmha(mid):
+    filename = os.path.join(IMAGE_DIR,str(mid),str(mid)+"_Original.mha")
+    im = sitk.ReadImage(str(filename))
+    im_array = sitk.GetArrayFromImage(im)
+
+
+    filenamemask = os.path.join(IMAGE_DIR,str(mid),str(mid)+"_Mask_T1_a.mha")
+    imask = sitk.ReadImage(str(filenamemask))
+    mask_array = sitk.GetArrayFromImage(imask)
+    
+    filenamemask2 = os.path.join(IMAGE_DIR,str(mid),str(mid)+"_Mask_T1_b.mha")
+    imask2 = sitk.ReadImage(str(filenamemask2))
+    mask_array2 = sitk.GetArrayFromImage(imask2)
+    return im_array, mask_array, mask_array2
+
+#
+#im_array, mask_array, mask_array2 = readmha(155)
+#
+#
+##midlower=83
+##midupper=86
+##totalnum=136
+##xfront = np.zeros(shape=(midlower-1,384,384))
+##xend = np.zeros(shape=(totalnum-midupper,384,384))
+#label_array = np.zeros(shape=(im_array.shape))
+#for i, v in enumerate(mask_array):
+#    label_array[i] = label_array[i]+125/255*mask_array[i]
+#for i2,v2 in enumerate(mask_array2):
+#    label_array[i2] = label_array[i2]+200/255*mask_array2[i2]
+#mid=155
+##i=0
+##newmha = np.concatenate((xfront,mask_array,xend),axis=0)
+##newmha = np.transpose(newmha,(0,1,2))
+#OUTPUT_DIR = 'D:\jc'
+#img = sitk.GetImageFromArray(label_array)
+#output_file_name_3D = os.path.join(OUTPUT_DIR, str(mid)+'_label.mha')
+#sitk.WriteImage(img,output_file_name_3D)
+    
+#while ind < len(oris):
+#    filename = os.path.join(IMAGE_DIR, oris[ind])
+#    im=sitk.ReadImage(filename)
+#    im_array = sitk.GetArrayFromImage(im)
+#    mhashape.append(im_array.shape)
+#    ind=ind+1
+    
+
+
+
+#switch the order of elements in array
+#midlist[89],midlist[91]=midlist[91],midlist[89]
+#mhasplitfinal[89],mhasplitfinal[91]=mhasplitfinal[91],mhasplitfinal[89]
+#mhas[89],mhas[91]=mhas[91],mhas[89]
